@@ -3,9 +3,10 @@ module Ch1.L_Int.Interpreter exposing
     , Input
     , RuntimeError(..)
     , run
+    , runProgram
     )
 
-import Ch1.L_Int.AST exposing (..)
+import Ch1.L_Int.AST as AST exposing (..)
 import Ch1.L_Int.Parser as P
 
 
@@ -25,13 +26,17 @@ type RuntimeError
 run : String -> Input -> Result Error Int
 run source input =
     case P.parse source of
-        Ok (Program expr) ->
-            interpretExpr expr input
-                |> Tuple.first
+        Ok program ->
+            runProgram program input
                 |> Result.mapError RuntimeError
 
         Err err ->
             Err <| SyntaxError err
+
+
+runProgram : AST.Program -> Input -> Result RuntimeError Int
+runProgram (Program expr) =
+    interpretExpr expr >> Tuple.first
 
 
 interpretExpr : Expr -> Input -> ( Result RuntimeError Int, Input )
