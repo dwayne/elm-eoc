@@ -10,6 +10,7 @@ suite : Test
 suite =
     describe "Ch1.L_Int.Parser"
         [ parseSuite
+        , leafSuite
         ]
 
 
@@ -55,3 +56,42 @@ testParse ( input, expectedExpr ) =
 
                 Err e ->
                     Expect.fail <| Debug.toString e
+
+
+leafSuite : Test
+leafSuite =
+    describe "leaf"
+        [ test "(read)" <|
+            \_ ->
+                leaf (Prim Read)
+                    |> Expect.equal True
+        , test "(- 8)" <|
+            \_ ->
+                leaf (Prim (Negate (Int 8)))
+                    |> Expect.equal False
+        , test "8" <|
+            \_ ->
+                leaf (Int 8)
+                    |> Expect.equal True
+        ]
+
+
+leaf : Expr -> Bool
+leaf expr =
+    case expr of
+        Int _ ->
+            True
+
+        Prim prim ->
+            case prim of
+                Read ->
+                    True
+
+                Negate _ ->
+                    False
+
+                Add _ _ ->
+                    False
+
+                Sub _ _ ->
+                    False
