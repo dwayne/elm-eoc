@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+#
+# Usage: build-ch1-l-int
+#
+
+set -euo pipefail
+
+src="${project:?}/src/Ch1/L_Int"
+out="${build:?}/ch1-l-int"
+
+clean () {
+  rm -rf "$out"
+}
+
+prepare () {
+  mkdir -p "$out"
+}
+
+build_html () {
+  cp "$src/index.html" "$out"
+}
+
+build_js () {
+  elm make "$src/Main.elm" --debug --output "$out/app.js"
+}
+
+clean && prepare && build_html && build_js
