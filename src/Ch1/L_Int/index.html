@@ -7,14 +7,18 @@
     <title>Ch1: L_Int</title>
 
     <style>
+      *, *:before, *:after {
+        box-sizing: border-box;
+      }
+
       .console {
         width: 400px;
         height: 200px;
 
         overflow: scroll;
 
-        background-color: black;
-        color: white;
+        background-color: #333;
+        color: green;
 
         margin-top: 16px;
         padding: 8px;
@@ -22,6 +26,24 @@
 
       .console__line {
         margin-bottom: 8px;
+      }
+
+      .console__line--error {
+        color: red;
+      }
+
+      .console__line--input {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .console__line--input > span {
+        color: pink;
+      }
+
+      .console__line--input > input {
+        width: 100%;
       }
     </style>
   </head>
