@@ -1,17 +1,20 @@
 module Ch1.L_Int.Main exposing (main)
 
 import Browser
+import Browser.Dom as BD
 import Ch1.L_Int.CPSInterpreter as I
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
+import Task
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
+    Browser.element
         { init = init
         , update = update
+        , subscriptions = always Sub.none
         , view = view
         }
 
@@ -38,12 +41,14 @@ type alias ReadIntState =
     }
 
 
-init : Model
-init =
-    { source = "(+ (read) (- 8))"
-    , lines = []
-    , maybeReadIntState = Nothing
-    }
+init : () -> ( Model, Cmd msg )
+init _ =
+    ( { source = "(+ (read) (- 8))"
+      , lines = []
+      , maybeReadIntState = Nothing
+      }
+    , Cmd.none
+    )
 
 
 
@@ -55,26 +60,35 @@ type Msg
     | ClickedRun
     | InputValue String
     | SubmittedValue
+    | Focused
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         InputSource source ->
-            { model | source = source }
+            ( { model | source = source }
+            , Cmd.none
+            )
 
         ClickedRun ->
             case I.run model.source of
                 Ok effect ->
                     case effect of
                         I.Value n ->
-                            { model | lines = model.lines ++ [ Success <| String.fromInt n ] }
+                            ( { model | lines = model.lines ++ [ Success <| String.fromInt n ] }
+                            , Cmd.none
+                            )
 
                         I.ReadInt readIntCont ->
-                            { model | maybeReadIntState = Just { value = "", cont = readIntCont } }
+                            ( { model | maybeReadIntState = Just { value = "", cont = readIntCont } }
+                            , focus readInputId
+                            )
 
                 Err (I.SyntaxError _) ->
-                    { model | lines = model.lines ++ [ Error "Syntax Error" ] }
+                    ( { model | lines = model.lines ++ [ Error "Syntax Error" ] }
+                    , Cmd.none
+                    )
 
         InputValue value ->
             case model.maybeReadIntState of
@@ -83,10 +97,12 @@ update msg model =
                         newReadIntState =
                             { readIntState | value = value }
                     in
-                    { model | maybeReadIntState = Just newReadIntState }
+                    ( { model | maybeReadIntState = Just newReadIntState }
+                    , Cmd.none
+                    )
 
                 Nothing ->
-                    model
+                    ( model, Cmd.none )
 
         SubmittedValue ->
             case model.maybeReadIntState of
@@ -99,23 +115,40 @@ update msg model =
                             in
                             case I.applyCont m cont of
                                 I.Value n ->
-                                    { model
-                                    | lines = model.lines ++ [ valueLine, Success <| String.fromInt n ]
-                                    , maybeReadIntState = Nothing
-                                    }
+                                    ( { model
+                                      | lines = model.lines ++ [ valueLine, Success <| String.fromInt n ]
+                                      , maybeReadIntState = Nothing
+                                      }
+                                    , Cmd.none
+                                    )
 
                                 I.ReadInt readIntCont ->
-                                    { model
-                                    | lines = model.lines ++ [ valueLine ]
-                                    , maybeReadIntState = Just { value = "", cont = readIntCont }
-                                    }
+                                    ( { model
+                                      | lines = model.lines ++ [ valueLine ]
+                                      , maybeReadIntState = Just { value = "", cont = readIntCont }
+                                      }
+                                    , focus readInputId
+                                    )
 
 
                         Nothing ->
-                            model
+                            ( model, Cmd.none )
 
                 Nothing ->
-                    model
+                    ( model, Cmd.none )
+
+        Focused ->
+            ( model, Cmd.none )
+
+
+readInputId : String
+readInputId =
+    "read-input"
+
+
+focus : String -> Cmd Msg
+focus =
+    BD.focus >> Task.attempt (always Focused)
 
 
 -- VIEW
@@ -159,7 +192,8 @@ view { source, lines, maybeReadIntState } =
                             ]
                             [ H.span [] [ H.text ">" ]
                             , H.input
-                                [ HA.type_ "text"
+                                [ HA.id readInputId
+                                , HA.type_ "text"
                                 , HA.value value
                                 , HE.onInput InputValue
                                 ]

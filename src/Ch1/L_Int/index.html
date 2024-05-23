@@ -12,20 +12,20 @@
       }
 
       .console {
-        width: 400px;
-        height: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        width: 600px;
+        height: 400px;
 
         overflow: scroll;
 
         background-color: #333;
-        color: green;
+        color: white;
 
         margin-top: 16px;
         padding: 8px;
-      }
-
-      .console__line {
-        margin-bottom: 8px;
       }
 
       .console__line--error {
@@ -36,10 +36,6 @@
         display: flex;
         gap: 4px;
         align-items: center;
-      }
-
-      .console__line--input > span {
-        color: pink;
       }
 
       .console__line--input > input {
