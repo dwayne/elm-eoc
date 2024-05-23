@@ -113,7 +113,7 @@ update msg model =
                                 valueLine =
                                     Success <| "> " ++ String.fromInt m
                             in
-                            case I.applyCont m cont of
+                            case I.resume m cont of
                                 I.Value n ->
                                     ( { model
                                       | lines = model.lines ++ [ valueLine, Success <| String.fromInt n ]

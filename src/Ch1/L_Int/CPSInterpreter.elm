@@ -2,7 +2,7 @@ module Ch1.L_Int.CPSInterpreter exposing
     ( Continuation
     , Effect(..)
     , Error(..)
-    , applyCont
+    , resume
     , run
     )
 
@@ -82,3 +82,11 @@ applyCont n cont =
 
         Sub2Cont a nextCont ->
             applyCont (a - n) nextCont
+
+
+resume : Int -> Continuation -> Effect
+resume =
+    --
+    -- A better name for public consumers of this API.
+    --
+    applyCont
