@@ -47,17 +47,17 @@ parseSuite =
                     (Prim (Add (Int 10) (Var "x")))
               )
             , ( "(let ([x 32]) (+ (let ([x 10]) x) x))"
-              , Let "x" (Int 32)
-                    <| Prim
-                    <| Add
-                        (Let "x" (Int 10) (Var "x"))
-                        (Var "x")
+              , Let "x" (Int 32) <|
+                    Prim <|
+                        Add
+                            (Let "x" (Int 10) (Var "x"))
+                            (Var "x")
               )
             , ( "(let ([x (read)]) (let ([y (read)]) (+ x (- y))))"
               , Let "x" (Prim Read) <|
-                    Let "y" (Prim Read)
-                        <| Prim
-                        <| Add (Var "x") (Prim (Negate (Var "y")))
+                    Let "y" (Prim Read) <|
+                        Prim <|
+                            Add (Var "x") (Prim (Negate (Var "y")))
               )
             ]
 

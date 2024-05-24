@@ -7,11 +7,16 @@ module Ch2.L_Var.Interpreter exposing
     )
 
 import Ch2.L_Var.AST as AST exposing (..)
+import Ch2.L_Var.Env as Env
 import Ch2.L_Var.Parser as P
 
 
 type alias Input =
     List Int
+
+
+type alias Env =
+    Env.Env Id Int
 
 
 type Error
@@ -21,6 +26,7 @@ type Error
 
 type RuntimeError
     = MissingInput
+    | IdentifierNotFound Id
 
 
 run : String -> Input -> Result Error Int
@@ -36,11 +42,11 @@ run source input =
 
 runProgram : AST.Program -> Input -> Result RuntimeError Int
 runProgram (Program expr) =
-    interpretExpr expr >> Tuple.first
+    interpretExpr expr Env.empty >> Tuple.first
 
 
-interpretExpr : Expr -> Input -> ( Result RuntimeError Int, Input )
-interpretExpr expr input =
+interpretExpr : Expr -> Env -> Input -> ( Result RuntimeError Int, Input )
+interpretExpr expr env input =
     case expr of
         Int n ->
             ( Ok n
@@ -60,19 +66,19 @@ interpretExpr expr input =
                     )
 
         Prim (Negate aExpr) ->
-            interpretExpr aExpr input
+            interpretExpr aExpr env input
                 |> Tuple.mapFirst (Result.map negate)
 
         Prim (Add aExpr bExpr) ->
             let
                 ( aResult, input1 ) =
-                    interpretExpr aExpr input
+                    interpretExpr aExpr env input
             in
             case aResult of
                 Ok a ->
                     let
                         ( bResult, input2 ) =
-                            interpretExpr bExpr input1
+                            interpretExpr bExpr env input1
                     in
                     case bResult of
                         Ok b ->
@@ -93,13 +99,13 @@ interpretExpr expr input =
         Prim (Sub aExpr bExpr) ->
             let
                 ( aResult, input1 ) =
-                    interpretExpr aExpr input
+                    interpretExpr aExpr env input
             in
             case aResult of
                 Ok a ->
                     let
                         ( bResult, input2 ) =
-                            interpretExpr bExpr input1
+                            interpretExpr bExpr env input1
                     in
                     case bResult of
                         Ok b ->
@@ -117,8 +123,28 @@ interpretExpr expr input =
                     , input1
                     )
 
-        Var _ ->
-            Debug.todo "Implement Var"
+        Var id ->
+            case Env.find id env of
+                Just n ->
+                    ( Ok n
+                    , input
+                    )
 
-        Let _ _ _ ->
-            Debug.todo "Implement Let"
+                Nothing ->
+                    ( Err <| IdentifierNotFound id
+                    , input
+                    )
+
+        Let id e body ->
+            let
+                ( eResult, input1 ) =
+                    interpretExpr e env input
+            in
+            case eResult of
+                Ok v ->
+                    interpretExpr body (Env.extend id v env) input1
+
+                Err _ ->
+                    ( eResult
+                    , input1
+                    )
