@@ -3,6 +3,7 @@ module Ch2.L_Var.Parser exposing (Error, parse)
 import Ch2.L_Var.AST as AST exposing (..)
 import Lib.Lexer as L
 import Parser as P exposing ((|.), (|=), Parser)
+import Set
 
 
 type alias Error =
@@ -26,7 +27,8 @@ expr : Parser Expr
 expr =
     P.oneOf
         [ intExpr
-        , primExpr
+        , varExpr
+        , parenExpr
         ]
 
 
@@ -35,31 +37,57 @@ intExpr =
     P.map Int L.int
 
 
-primExpr : Parser Expr
-primExpr =
-    P.succeed Prim
+varExpr : Parser Expr
+varExpr =
+    P.map Var id
+
+
+parenExpr : Parser Expr
+parenExpr =
+    P.succeed identity
         |. L.symbol "("
         |= P.oneOf
-            [ P.succeed Read
+            [ P.succeed (Prim Read)
                 |. L.keyword "read"
             , P.succeed
                 (\a maybeB ->
                     case maybeB of
                         Nothing ->
-                            Negate a
+                            Prim <| Negate a
 
                         Just b ->
-                            Sub a b
+                            Prim <| Sub a b
                 )
                 |. L.symbol "-"
                 |= P.lazy (\_ -> expr)
                 |= optional (P.lazy (\_ -> expr))
-            , P.succeed Add
+            , P.succeed (\a b -> Prim <| Add a b)
                 |. L.symbol "+"
                 |= P.lazy (\_ -> expr)
                 |= P.lazy (\_ -> expr)
+            , P.succeed Let
+                |. L.keyword "let"
+                |. L.symbol "("
+                |. L.symbol "["
+                |= id
+                |= P.lazy (\_ -> expr)
+                |. L.symbol "]"
+                |. L.symbol ")"
+                |= P.lazy (\_ -> expr)
             ]
         |. L.symbol ")"
+
+
+id : Parser String
+id =
+    let
+        reserved =
+            Set.fromList
+                [ "let"
+                , "read"
+                ]
+    in
+    L.makeIdentifier reserved
 
 
 

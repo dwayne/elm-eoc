@@ -116,3 +116,9 @@ interpretExpr expr input =
                     ( aResult
                     , input1
                     )
+
+        Var _ ->
+            Debug.todo "Implement Var"
+
+        Let _ _ _ ->
+            Debug.todo "Implement Let"

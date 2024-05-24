@@ -10,7 +10,6 @@ suite : Test
 suite =
     describe "Ch2.L_Var.Parser"
         [ parseSuite
-        , leafSuite
         ]
 
 
@@ -35,6 +34,31 @@ parseSuite =
             , ( "(+ (read) (- 8))"
               , Prim (Add (Prim Read) (Prim (Negate (Int 8))))
               )
+
+            --
+            -- Test Var and Let
+            --
+            , ( "x", Var "x" )
+            , ( "(let ([y 5]) y)", Let "y" (Int 5) (Var "y") )
+            , ( "(let ([x (+ 12 20)]) (+ 10 x))"
+              , Let
+                    "x"
+                    (Prim (Add (Int 12) (Int 20)))
+                    (Prim (Add (Int 10) (Var "x")))
+              )
+            , ( "(let ([x 32]) (+ (let ([x 10]) x) x))"
+              , Let "x" (Int 32)
+                    <| Prim
+                    <| Add
+                        (Let "x" (Int 10) (Var "x"))
+                        (Var "x")
+              )
+            , ( "(let ([x (read)]) (let ([y (read)]) (+ x (- y))))"
+              , Let "x" (Prim Read) <|
+                    Let "y" (Prim Read)
+                        <| Prim
+                        <| Add (Var "x") (Prim (Negate (Var "y")))
+              )
             ]
 
 
@@ -56,42 +80,3 @@ testParse ( input, expectedExpr ) =
 
                 Err e ->
                     Expect.fail <| Debug.toString e
-
-
-leafSuite : Test
-leafSuite =
-    describe "leaf"
-        [ test "(read)" <|
-            \_ ->
-                leaf (Prim Read)
-                    |> Expect.equal True
-        , test "(- 8)" <|
-            \_ ->
-                leaf (Prim (Negate (Int 8)))
-                    |> Expect.equal False
-        , test "8" <|
-            \_ ->
-                leaf (Int 8)
-                    |> Expect.equal True
-        ]
-
-
-leaf : Expr -> Bool
-leaf expr =
-    case expr of
-        Int _ ->
-            True
-
-        Prim prim ->
-            case prim of
-                Read ->
-                    True
-
-                Negate _ ->
-                    False
-
-                Add _ _ ->
-                    False
-
-                Sub _ _ ->
-                    False

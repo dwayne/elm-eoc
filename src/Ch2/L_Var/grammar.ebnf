@@ -4,6 +4,14 @@ Expr  ::= Int
         | '(' '-' Expr ')'
         | '(' '-' Expr Expr ')'
         | '(' '+' Expr Expr ')'
-Int   ::= '-'? [0-9]+
+        | Var
+        | Let
+
+Int ::= '-'? Digit+
+Var ::= Letter (Letter | Digit)*
+Let ::= '(' 'let' '(' '[' Var Expr ']' ')' Expr ')'
+
+Letter ::= [a-zA-Z]
+Digit  ::= [0-9]
 
 /* Use https://rr.red-dove.com/ui to view it as a Railroad Diagram. */

@@ -1,5 +1,6 @@
 module Ch2.L_Var.AST exposing
     ( Expr(..)
+    , Id
     , Prim(..)
     , Program(..)
     )
@@ -12,6 +13,8 @@ type Program
 type Expr
     = Int Int
     | Prim Prim
+    | Var Id
+    | Let Id Expr Expr
 
 
 type Prim
@@ -19,3 +22,7 @@ type Prim
     | Negate Expr
     | Add Expr Expr
     | Sub Expr Expr
+
+
+type alias Id =
+    String

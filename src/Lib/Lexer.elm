@@ -1,11 +1,23 @@
 module Lib.Lexer exposing
     ( int
     , keyword
+    , makeIdentifier
     , spaces
     , symbol
     )
 
 import Parser as P exposing ((|.), (|=), Parser)
+import Set exposing (Set)
+
+
+makeIdentifier : Set String -> Parser String
+makeIdentifier reserved =
+    P.variable
+        { start = Char.isAlpha
+        , inner = Char.isAlphaNum
+        , reserved = reserved
+        }
+        |> lexeme
 
 
 int : Parser Int
