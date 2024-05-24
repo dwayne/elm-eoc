@@ -1,0 +1,9 @@
+L_Var ::= Expr
+Expr  ::= Int
+        | '(' 'read' ')'
+        | '(' '-' Expr ')'
+        | '(' '-' Expr Expr ')'
+        | '(' '+' Expr Expr ')'
+Int   ::= '-'? [0-9]+
+
+/* Use https://rr.red-dove.com/ui to view it as a Railroad Diagram. */
