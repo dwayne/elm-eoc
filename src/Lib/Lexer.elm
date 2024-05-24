@@ -1,4 +1,4 @@
-module Ch2.L_Var.Lexer exposing
+module Lib.Lexer exposing
     ( int
     , keyword
     , spaces

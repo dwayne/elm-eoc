@@ -1,7 +1,7 @@
 module Ch2.L_Var.Parser exposing (Error, parse)
 
 import Ch2.L_Var.AST as AST exposing (..)
-import Ch2.L_Var.Lexer as L
+import Lib.Lexer as L
 import Parser as P exposing ((|.), (|=), Parser)
 
 

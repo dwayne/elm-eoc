@@ -1,7 +1,7 @@
 module Ch1.L_Int.Parser exposing (Error, parse)
 
 import Ch1.L_Int.AST as AST exposing (..)
-import Ch1.L_Int.Lexer as L
+import Lib.Lexer as L
 import Parser as P exposing ((|.), (|=), Parser)
 
 
